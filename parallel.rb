@@ -3,16 +3,16 @@ class Parallel
   require 'concurrent'
 
   def initialize
-    @results = []
+    @results = {}
     @tasks_count = 0
     @p = Concurrent::Promise.new{true}
     super
   end
 
-  def run(array_of_blocks = [])
-    @tasks_count = array_of_blocks.count
-    array_of_blocks.each{|block|
-      @p.then{block.call}.then{|result| @results.push result }
+  def run(hash_of_blocks = {})
+    @tasks_count = hash_of_blocks.keys.count
+    hash_of_blocks.each{|task_name, block|
+      @p.then{block.call}.then{|result| @results[task_name] = result }
     }
     @p.execute
     @p
@@ -23,7 +23,7 @@ class Parallel
   end
 
   def results
-    while (@tasks_count > @results.count) do end
+    while (@tasks_count > @results.keys.count) do end
     @results
   end
 
@@ -38,7 +38,15 @@ parallel = Parallel.new
 p Time.now
 
 # put some tasks
-parallel.run([ lambda{2+2}, lambda{3+3}, lambda{sleep 5}, lambda{sleep 5}, lambda{sleep 5}, lambda{sleep 5}, lambda{sleep 5} ])
+task1     = lambda{2+2}
+task2     = lambda{2+2}
+sleeptask = lambda{sleep 5}
+parallel.run( { :task1 => task1,
+                :task2 => task2,
+                :task3 => sleeptask,
+                :task4 => sleeptask,
+                :task5 => sleeptask,
+                :task6 => sleeptask } )
 
 # sync waiting for the results
 p parallel.results
