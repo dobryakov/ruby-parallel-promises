@@ -18,6 +18,10 @@ class Parallel
     @p
   end
 
+  def async_results
+    @results
+  end
+
   def results
     while (@tasks_count > @results.count) do end
     @results
@@ -25,9 +29,19 @@ class Parallel
 
 end
 
+# example:
+
+# instance initialization
 parallel = Parallel.new
-parallel.run([ lambda{2+2}, lambda{3+3} ])
-#p run.value
-#sleep 1
+
+# start time
+p Time.now
+
+# put some tasks
+parallel.run([ lambda{2+2}, lambda{3+3}, lambda{sleep 5}, lambda{sleep 5}, lambda{sleep 5}, lambda{sleep 5}, lambda{sleep 5} ])
+
+# sync waiting for the results
 p parallel.results
 
+# end time (must be smaller than sum of the sleeps above)
+p Time.now
